@@ -277,7 +277,11 @@ export function useStudentContent(user: User | null) {
     // --- Handlers ---
 
     const handleActivitySubmit = async (activityId: string, content: string) => {
-        try { await submitActivityMutation.mutateAsync({ activityId, content }); } catch {}
+        try { 
+            await submitActivityMutation.mutateAsync({ activityId, content }); 
+        } catch (e) {
+            console.error("Erro crítico ao submeter atividade:", e);
+        }
     };
 
     const searchQuizzes = useCallback(async (filters: any) => {

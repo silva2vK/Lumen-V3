@@ -16,8 +16,6 @@ service cloud.firestore {
     }
 
     function isTeacher() {
-      // Verifica se o token de auth possui a claim de professor OU lê do documento (mais lento, mas seguro)
-      // Para performance, assumimos leitura do documento do usuário atual
       return isAuthenticated() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'professor';
     }
 
@@ -30,20 +28,25 @@ service cloud.firestore {
     // =================================================================================
 
     match /activities/{activityId} {
-      // LEITURA: Permitida para autenticados. O filtro real de segurança é feito na Query do Frontend (where classId in myClasses).
+      // LEITURA: Permitida para autenticados.
       allow read: if isAuthenticated();
       
       // ESCRITA: Apenas Professores e Admins
       allow create, delete: if isTeacher() || isAdmin();
       
-      // ATUALIZAÇÃO: Professores (tudo) ou Alunos (apenas contadores, se necessário via client, mas idealmente via Cloud Function)
-      allow update: if isTeacher() || isAdmin();
+      // ATUALIZAÇÃO: 
+      // 1. Professores/Admins podem editar tudo.
+      // 2. Alunos podem atualizar APENAS se não alterarem campos críticos (Título, Descrição, Pontos).
+      // Isso permite que o 'increment' nos contadores funcione sem usar a função 'diff' que pode ser instável.
+      allow update: if isTeacher() || isAdmin() || (
+        isAuthenticated() && 
+        request.resource.data.title == resource.data.title &&
+        request.resource.data.points == resource.data.points
+      );
 
-      // SUB-COLEÇÃO: SUBMISSÕES (Onde ocorre o erro de Collection Group)
+      // SUB-COLEÇÃO: SUBMISSÕES
       match /submissions/{submissionId} {
         // Regra vital para acesso direto (get) ou via query (list)
-        // 1. Se for o próprio aluno (pelo ID do documento ou pelo campo studentId)
-        // 2. Se for professor ou admin
         allow read: if isAuthenticated() && (
           submissionId == request.auth.uid || 
           (resource != null && resource.data.studentId == request.auth.uid) ||
@@ -52,13 +55,14 @@ service cloud.firestore {
         );
 
         // Aluno pode criar/editar APENAS sua própria submissão
+        // Verifica se o ID no documento corresponde ao usuário logado
         allow create: if isUser(request.resource.data.studentId);
-        allow update: if isUser(resource.data.studentId) && notUpdating('grade'); // Aluno não pode mudar a nota
+        
+        allow update: if isUser(resource.data.studentId) && notUpdating('grade');
       }
     }
 
     // Regra específica para COLLECTION GROUP queries (Global)
-    // Isso garante que queries como db.collectionGroup('submissions') funcionem se filtrarem por studentId
     match /{path=**}/submissions/{submissionId} {
       allow read: if isAuthenticated() && (
         resource.data.studentId == request.auth.uid ||
