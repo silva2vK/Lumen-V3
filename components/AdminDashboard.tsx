@@ -10,6 +10,7 @@ import { db } from './firebaseClient';
 import { useToast } from '../contexts/ToastContext';
 import { SpinnerIcon } from '../constants/index';
 import { useSettings } from '../contexts/SettingsContext';
+import type { HistoricalEra } from '../types';
 
 // --- DMC STYLE COMPONENTS ---
 
@@ -221,7 +222,95 @@ const ThematicConfigModal: React.FC<{ isOpen: boolean; onClose: () => void }> = 
     );
 };
 
-// --- DASHBOARD ASSETS CONFIG MODAL (NEW) ---
+// --- TIMELINE CONFIG MODAL (NEW) ---
+const TimelineConfigModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
+    const { addToast } = useToast();
+    const [isSaving, setIsSaving] = useState(false);
+    
+    // State for each era
+    const [eras, setEras] = useState<Record<HistoricalEra, string>>({
+        'Pré-História': '',
+        'Antiga': '',
+        'Média': '',
+        'Moderna': '',
+        'Contemporânea': ''
+    });
+
+    useEffect(() => {
+        const load = async () => {
+            if (!isOpen) return;
+            try {
+                const docRef = doc(db, 'system_settings', 'timeline_backgrounds');
+                const snap = await getDoc(docRef);
+                if (snap.exists()) {
+                    const data = snap.data();
+                    const newEras = { ...eras };
+                    (Object.keys(eras) as HistoricalEra[]).forEach(era => {
+                        // Data is stored as array, but we only edit the first one in simple mode
+                        if (data[era] && Array.isArray(data[era]) && data[era].length > 0) {
+                            newEras[era] = data[era][0];
+                        }
+                    });
+                    setEras(newEras);
+                }
+            } catch (e) { console.error(e); }
+        };
+        load();
+    }, [isOpen]);
+
+    const handleSave = async () => {
+        setIsSaving(true);
+        try {
+            // Converts string input back to array format for storage
+            const payload: any = {};
+            (Object.keys(eras) as HistoricalEra[]).forEach(era => {
+                if (eras[era].trim()) {
+                    payload[era] = [eras[era].trim()];
+                }
+            });
+
+            await setDoc(doc(db, 'system_settings', 'timeline_backgrounds'), payload, { merge: true });
+            addToast("Backgrounds da Timeline atualizados!", "success");
+            onClose();
+        } catch (e: any) { addToast(e.message, "error"); } 
+        finally { setIsSaving(false); }
+    };
+
+    const handleChange = (era: HistoricalEra, value: string) => {
+        setEras(prev => ({ ...prev, [era]: value }));
+    };
+
+    return (
+        <Modal isOpen={isOpen} onClose={onClose} title="CONFIG. MAPA DO TEMPO">
+            <div className="space-y-4 text-left font-mono">
+                <p className="text-xs text-slate-400">
+                    Defina as imagens de fundo para cada Era Histórica no Mapa Interativo.
+                </p>
+                
+                {(Object.keys(eras) as HistoricalEra[]).map(era => (
+                    <div key={era} className="space-y-1">
+                        <label className="text-[10px] text-[#00d2ff] uppercase font-bold tracking-wider">{era}</label>
+                        <input 
+                            type="text" 
+                            value={eras[era]} 
+                            onChange={e => handleChange(era, e.target.value)} 
+                            placeholder={`URL para ${era}...`}
+                            className="w-full bg-black border border-white/20 p-2 text-white font-mono text-xs focus:border-[#00d2ff] outline-none" 
+                        />
+                    </div>
+                ))}
+
+                <div className="flex justify-end pt-4">
+                    <button onClick={handleSave} disabled={isSaving} className="px-6 py-2 bg-[#00d2ff] text-black font-bold hover:bg-white transition-colors skew-x-[-12deg]">
+                        {isSaving ? 'SALVANDO...' : 'ATUALIZAR MAPAS'}
+                    </button>
+                </div>
+            </div>
+        </Modal>
+    );
+};
+
+// --- DASHBOARD ASSETS CONFIG MODAL ---
 const DashboardAssetsModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
     const { addToast } = useToast();
     const [defaultCoverUrl, setDefaultCoverUrl] = useState('');
@@ -324,6 +413,7 @@ const AdminDashboard: React.FC = () => {
     const [isThematicModalOpen, setIsThematicModalOpen] = useState(false);
     const [isAssetsModalOpen, setIsAssetsModalOpen] = useState(false);
     const [isIndexModalOpen, setIsIndexModalOpen] = useState(false);
+    const [isTimelineModalOpen, setIsTimelineModalOpen] = useState(false); // NEW
 
     // Preload Admin Fonts
     useEffect(() => {
@@ -365,6 +455,12 @@ const AdminDashboard: React.FC = () => {
                         className="px-4 py-2 border border-[#00d2ff]/50 text-[#00d2ff] text-xs font-mono hover:bg-[#00d2ff] hover:text-black transition-colors uppercase"
                     >
                         [ CONFIG_CAPAS ]
+                    </button>
+                    <button 
+                        onClick={() => setIsTimelineModalOpen(true)}
+                        className="px-4 py-2 border border-[#00d2ff]/50 text-[#00d2ff] text-xs font-mono hover:bg-[#00d2ff] hover:text-black transition-colors uppercase"
+                    >
+                        [ CONFIG_TIMELINE ]
                     </button>
                     <button 
                         onClick={() => setIsThematicModalOpen(true)}
@@ -453,6 +549,7 @@ const AdminDashboard: React.FC = () => {
             {/* Modals */}
             <DashboardAssetsModal isOpen={isAssetsModalOpen} onClose={() => setIsAssetsModalOpen(false)} />
             <ThematicConfigModal isOpen={isThematicModalOpen} onClose={() => setIsThematicModalOpen(false)} />
+            <TimelineConfigModal isOpen={isTimelineModalOpen} onClose={() => setIsTimelineModalOpen(false)} />
             <IndexDiagnosticModal isOpen={isIndexModalOpen} onClose={() => setIsIndexModalOpen(false)} />
         </div>
     );
