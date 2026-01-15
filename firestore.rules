@@ -31,7 +31,6 @@ service cloud.firestore {
 
     match /activities/{activityId} {
       // LEITURA: Permitida para autenticados. O filtro real de segurança é feito na Query do Frontend (where classId in myClasses).
-      // Validar "se o aluno está na turma" via regras em queries de lista (list) é custoso/impossível no Firestore sem denormalização.
       allow read: if isAuthenticated();
       
       // ESCRITA: Apenas Professores e Admins
@@ -42,12 +41,15 @@ service cloud.firestore {
 
       // SUB-COLEÇÃO: SUBMISSÕES (Onde ocorre o erro de Collection Group)
       match /submissions/{submissionId} {
-        // Regra vital para Collection Group Query:
-        // Permite ler SE o documento pertence ao usuário logado.
-        allow read: if isAuthenticated() && resource.data.studentId == request.auth.uid;
-        
-        // Professores podem ler qualquer submissão dentro da atividade
-        allow read: if isTeacher() || isAdmin();
+        // Regra vital para acesso direto (get) ou via query (list)
+        // 1. Se for o próprio aluno (pelo ID do documento ou pelo campo studentId)
+        // 2. Se for professor ou admin
+        allow read: if isAuthenticated() && (
+          submissionId == request.auth.uid || 
+          (resource != null && resource.data.studentId == request.auth.uid) ||
+          isTeacher() || 
+          isAdmin()
+        );
 
         // Aluno pode criar/editar APENAS sua própria submissão
         allow create: if isUser(request.resource.data.studentId);
@@ -58,7 +60,11 @@ service cloud.firestore {
     // Regra específica para COLLECTION GROUP queries (Global)
     // Isso garante que queries como db.collectionGroup('submissions') funcionem se filtrarem por studentId
     match /{path=**}/submissions/{submissionId} {
-      allow read: if isAuthenticated() && resource.data.studentId == request.auth.uid;
+      allow read: if isAuthenticated() && (
+        resource.data.studentId == request.auth.uid ||
+        isTeacher() ||
+        isAdmin()
+      );
     }
 
     // =================================================================================
