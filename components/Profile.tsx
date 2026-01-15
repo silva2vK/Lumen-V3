@@ -14,7 +14,7 @@ import type { ProfileViewProps } from './profile/ProfileTypes';
 
 const Profile: React.FC = () => {
     const { user, userRole, updateUser } = useAuth();
-    const { updateWallpaper, removeWallpaper, wallpaper: contextWallpaper, setWallpaperFromUrl } = useSettings();
+    const { updateWallpaper, removeWallpaper, wallpaper: contextWallpaper, setWallpaperFromUrl, theme, accentColor, fontProfile } = useSettings();
     const { addToast } = useToast();
     
     const [isEditing, setIsEditing] = useState(false);
@@ -97,7 +97,14 @@ const Profile: React.FC = () => {
     const handleSave = async () => {
         if (!user) return;
         try {
-            await updateUser({ name, series, avatarUrl });
+            await updateUser({ 
+                name, 
+                series, 
+                avatarUrl,
+                theme,        // Save current theme setting
+                accentColor,  // Save current accent color
+                fontProfile   // Save current font profile
+            });
             setIsEditing(false);
             addToast("Dados salvos com sucesso!", "success");
         } catch (error) { addToast("Falha ao salvar.", "error"); }

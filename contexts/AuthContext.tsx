@@ -77,7 +77,10 @@ export function AuthProvider({ children }: { children?: React.ReactNode }) {
                             role: profile.role,
                             series: profile.series,
                             avatarUrl: profile.avatarUrl, // Ensure avatarUrl is loaded from Firestore
-                            wallpaperUrl: profile.wallpaperUrl || null
+                            wallpaperUrl: profile.wallpaperUrl || null,
+                            theme: profile.theme,
+                            accentColor: profile.accentColor,
+                            fontProfile: profile.fontProfile
                         };
                         setUser(appUser);
                         setAuthState('authenticated');
@@ -201,6 +204,9 @@ export function AuthProvider({ children }: { children?: React.ReactNode }) {
         if (updatedData.series !== undefined) payload.series = updatedData.series;
         if (updatedData.avatarUrl !== undefined) payload.avatarUrl = updatedData.avatarUrl;
         if (updatedData.wallpaperUrl !== undefined) payload.wallpaperUrl = updatedData.wallpaperUrl;
+        if (updatedData.theme !== undefined) payload.theme = updatedData.theme;
+        if (updatedData.accentColor !== undefined) payload.accentColor = updatedData.accentColor;
+        if (updatedData.fontProfile !== undefined) payload.fontProfile = updatedData.fontProfile;
 
         await updateDoc(userDocRef, payload);
 

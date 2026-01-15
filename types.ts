@@ -33,6 +33,9 @@ export interface User {
   series?: string;
   avatarUrl?: string;
   wallpaperUrl?: string | null; // New field for console wallpaper
+  theme?: string; // Persisted Atmosphere
+  accentColor?: string; // Persisted Highlight Matrix
+  fontProfile?: string; // Persisted Coding Style
   myClassesSummary?: ClassSummary[]; 
   wards?: string[]; 
   linkedSchoolIds?: string[]; 

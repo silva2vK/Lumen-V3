@@ -123,7 +123,10 @@ const LoadingSpinner: React.FC = () => (
 const MainLayout: React.FC = () => {
     const { userRole, user } = useAuth();
     const { currentPage, activeModule, activeClass, activeActivity, activeQuiz, gradingActivity, toggleMobileMenu, isMobileMenuOpen } = useNavigation();
-    const { wallpaper, enableWallpaperMask, globalTheme, enableFocusMode, setWallpaperFromUrl } = useSettings();
+    const { 
+        wallpaper, enableWallpaperMask, globalTheme, enableFocusMode, 
+        setWallpaperFromUrl, setTheme, setAccentColor, setFontProfile 
+    } = useSettings();
     
     const [isScrolled, setIsScrolled] = useState(false);
     const mainContentRef = useRef<HTMLElement>(null);
@@ -133,12 +136,22 @@ const MainLayout: React.FC = () => {
         configureEnvironment();
     }, []);
 
-    // Sync Wallpaper from User Profile (Cloud)
+    // Sync Settings from User Profile (Cloud)
     useEffect(() => {
-        if (user && user.wallpaperUrl) {
-            setWallpaperFromUrl(user.wallpaperUrl);
+        if (user) {
+            // Wallpaper
+            if (user.wallpaperUrl) setWallpaperFromUrl(user.wallpaperUrl);
+            
+            // Theme / Atmosphere
+            if (user.theme) setTheme(user.theme as any);
+            
+            // Accent Color (Highlight Matrix)
+            if (user.accentColor) setAccentColor(user.accentColor);
+            
+            // Font Profile (Coding Style)
+            if (user.fontProfile) setFontProfile(user.fontProfile as any);
         }
-    }, [user, setWallpaperFromUrl]);
+    }, [user, setWallpaperFromUrl, setTheme, setAccentColor, setFontProfile]);
 
     useEffect(() => {
         const mainEl = mainContentRef.current;
