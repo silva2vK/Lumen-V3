@@ -1,0 +1,113 @@
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // =================================================================================
+    // 🛡️ KERNEL DE SEGURANÇA
+    // =================================================================================
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isUser(uid) {
+      return isAuthenticated() && request.auth.uid == uid;
+    }
+
+    function isTeacher() {
+      // Verifica se o token de auth possui a claim de professor OU lê do documento (mais lento, mas seguro)
+      // Para performance, assumimos leitura do documento do usuário atual
+      return isAuthenticated() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'professor';
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // =================================================================================
+    // 📝 ACTIVITIES (Atividades)
+    // =================================================================================
+
+    match /activities/{activityId} {
+      // LEITURA: Permitida para autenticados. O filtro real de segurança é feito na Query do Frontend (where classId in myClasses).
+      // Validar "se o aluno está na turma" via regras em queries de lista (list) é custoso/impossível no Firestore sem denormalização.
+      allow read: if isAuthenticated();
+      
+      // ESCRITA: Apenas Professores e Admins
+      allow create, delete: if isTeacher() || isAdmin();
+      
+      // ATUALIZAÇÃO: Professores (tudo) ou Alunos (apenas contadores, se necessário via client, mas idealmente via Cloud Function)
+      allow update: if isTeacher() || isAdmin();
+
+      // SUB-COLEÇÃO: SUBMISSÕES (Onde ocorre o erro de Collection Group)
+      match /submissions/{submissionId} {
+        // Regra vital para Collection Group Query:
+        // Permite ler SE o documento pertence ao usuário logado.
+        allow read: if isAuthenticated() && resource.data.studentId == request.auth.uid;
+        
+        // Professores podem ler qualquer submissão dentro da atividade
+        allow read: if isTeacher() || isAdmin();
+
+        // Aluno pode criar/editar APENAS sua própria submissão
+        allow create: if isUser(request.resource.data.studentId);
+        allow update: if isUser(resource.data.studentId) && notUpdating('grade'); // Aluno não pode mudar a nota
+      }
+    }
+
+    // Regra específica para COLLECTION GROUP queries (Global)
+    // Isso garante que queries como db.collectionGroup('submissions') funcionem se filtrarem por studentId
+    match /{path=**}/submissions/{submissionId} {
+      allow read: if isAuthenticated() && resource.data.studentId == request.auth.uid;
+    }
+
+    // =================================================================================
+    // 👤 USUÁRIOS E OUTROS
+    // =================================================================================
+
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isUser(userId);
+      
+      match /quiz_results/{quizId} { allow read, write: if isUser(userId); }
+      match /modulesProgress/{moduleId} { allow read, write: if isUser(userId); }
+      match /read_notifications/{notifId} { allow read, write: if isUser(userId); }
+    }
+
+    match /classes/{classId} {
+      allow read: if isAuthenticated();
+      allow write: if isTeacher() || isAdmin();
+    }
+
+    match /modules/{moduleId} {
+      allow read: if isAuthenticated();
+      allow write: if isTeacher() || isAdmin();
+    }
+    match /module_contents/{moduleId} {
+      allow read: if isAuthenticated();
+      allow write: if isTeacher() || isAdmin();
+    }
+    match /quizzes/{quizId} {
+      allow read: if isAuthenticated();
+      allow write: if isTeacher() || isAdmin();
+      match /answers/{docId} { allow read, write: if isTeacher() || isAdmin(); }
+    }
+
+    // Outros
+    match /achievements/{id} { allow read: if isAuthenticated(); allow write: if isAdmin(); }
+    match /userAchievements/{userId} { allow read: if isAuthenticated(); allow write: if isUser(userId) || isAdmin(); }
+    match /student_grades/{id} { allow read: if isAuthenticated(); allow write: if isTeacher() || isAdmin(); }
+    match /notifications/{id} { allow read: if isUser(resource.data.userId); allow write: if isAuthenticated(); }
+    match /broadcasts/{id} { allow read: if isAuthenticated(); allow write: if isTeacher() || isAdmin(); }
+    match /invitations/{id} { allow read, write: if isAuthenticated(); }
+    match /attendance_sessions/{id} { allow read, write: if isAuthenticated(); }
+    match /attendance_sessions/{sessionId}/records/{recordId} { allow read, write: if isAuthenticated(); }
+    match /system_settings/{id} { allow read: if true; allow write: if isAdmin(); }
+    match /teacher_history/{userId} { allow read, write: if isUser(userId); }
+
+    // Helper para verificar campos imutáveis
+    function notUpdating(field) {
+      return !(field in request.resource.data) || resource.data[field] == request.resource.data[field];
+    }
+  }
+}
