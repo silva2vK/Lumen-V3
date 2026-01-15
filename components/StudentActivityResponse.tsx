@@ -77,10 +77,14 @@ const StudentActivityResponse: React.FC = () => {
         }
     }, [activeActivity?.id, user]);
 
-    // Items logic
+    // Items logic - Agora garante que Análise Visual tenha um campo de resposta
     const items = useMemo(() => {
         if (!activity) return [];
+        
+        // Se a atividade tem itens definidos explicitamente, usa eles
         if (activity.items && activity.items.length > 0) return activity.items;
+        
+        // Se for legacy (perguntas antigas)
         if (activity.questions && activity.questions.length > 0) {
             return activity.questions.map((q: any) => ({
                 id: q.id.toString(),
@@ -90,6 +94,18 @@ const StudentActivityResponse: React.FC = () => {
                 points: 1 
             } as ActivityItem));
         }
+
+        // Lógica de Correção: Se for VisualSourceAnalysis e não tiver itens, cria um item padrão
+        if (activity.type === 'VisualSourceAnalysis') {
+            return [{
+                id: 'visual_analysis_response',
+                type: 'text',
+                question: 'Com base nos pontos destacados na imagem acima, escreva sua análise detalhada:',
+                points: activity.points || 10,
+                options: []
+            } as ActivityItem];
+        }
+
         return [];
     }, [activity]);
 
@@ -103,7 +119,7 @@ const StudentActivityResponse: React.FC = () => {
 
     const handleDynamicComplete = (data?: any) => {
         setDynamicData(data || {});
-        addToast("Progresso registrado.", "info");
+        // Removido toast repetitivo, feedback visual é suficiente
     };
 
     const handleSubmit = async () => {
