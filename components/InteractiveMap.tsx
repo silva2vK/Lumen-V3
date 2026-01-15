@@ -23,8 +23,8 @@ const ERA_CONFIG: Record<HistoricalEra, { color: string, label: string }> = {
 
 // Limites aproximados em Séculos (Índice Inteiro: -30 = Séc 30 a.C., 1 = Séc 1 d.C.)
 const ERA_BOUNDS: Record<HistoricalEra, { startCen: number, endCen: number }> = {
-    'Pré-História': { startCen: -50, endCen: -31 }, 
-    'Antiga': { startCen: -30, endCen: 5 },         
+    'Pré-História': { startCen: -50, endCen: -36 }, 
+    'Antiga': { startCen: -35, endCen: 5 },         
     'Média': { startCen: 6, endCen: 15 },           
     'Moderna': { startCen: 16, endCen: 18 },        
     'Contemporânea': { startCen: 19, endCen: 22 },  
@@ -357,7 +357,7 @@ const InteractiveMap: React.FC = () => {
                         }
                     }
 
-                    if (y <= -3100) computedEra = 'Pré-História';
+                    if (y < -3500) computedEra = 'Pré-História';
                     else if (y <= 476) computedEra = 'Antiga';
                     else if (y <= 1453) computedEra = 'Média';
                     else if (y <= 1789) computedEra = 'Moderna';
@@ -454,6 +454,33 @@ const InteractiveMap: React.FC = () => {
         calculate();
         return () => { isMounted = false; };
     }, [userRole, teacherContext?.modules, studentContext?.studentClasses, publicModules, classModules, backgrounds]);
+
+    // NEW: Wheel Interaction (Mouse Scroll -> Horizontal Pan)
+    useEffect(() => {
+        const el = viewportRef.current;
+        if (!el) return;
+
+        const onWheel = (e: WheelEvent) => {
+            e.preventDefault();
+            
+            // Map vertical scroll (deltaY) to horizontal movement
+            // Also support native horizontal scroll (deltaX) from trackpads
+            const delta = e.deltaY + e.deltaX;
+            const sensitivity = 2.0;
+
+            setCameraX(prevX => {
+                const logicalViewportWidth = window.innerWidth / scale;
+                const maxScroll = Math.max(0, totalWidth - logicalViewportWidth);
+                return Math.max(0, Math.min(prevX + (delta * sensitivity), maxScroll));
+            });
+        };
+
+        el.addEventListener('wheel', onWheel, { passive: false });
+        
+        return () => {
+            el.removeEventListener('wheel', onWheel);
+        };
+    }, [totalWidth, scale]);
 
     // Drag Interaction (Mouse)
     const handleStart = (clientX: number) => {

@@ -220,7 +220,7 @@ export const ModuleMetadataForm: React.FC<ModuleMetadataFormProps> = ({
     
     // Heuristic function to determine era based on year
     const determineEra = (year: number): HistoricalEra => {
-        if (year < -4000) return 'Pré-História';
+        if (year < -3500) return 'Pré-História';
         if (year < 476) return 'Antiga';
         if (year < 1453) return 'Média';
         if (year < 1789) return 'Moderna';

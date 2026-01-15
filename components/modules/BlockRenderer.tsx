@@ -59,18 +59,18 @@ const SafeImage: React.FC<{ src: string; alt: string; className: string }> = ({ 
             />
             {isFullScreen && createPortal(
                 <div 
-                    className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-xl flex items-center justify-center cursor-zoom-out animate-fade-in p-4"
+                    className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-xl flex items-center justify-center cursor-zoom-out animate-fade-in"
                     onClick={() => setIsFullScreen(false)}
                 >
-                    <div className="relative max-w-full max-h-full flex items-center justify-center">
+                    <div className="relative w-full h-full flex items-center justify-center">
                         <img 
                             src={src} 
                             alt={alt} 
-                            className="max-w-[95vw] max-h-[95vh] object-contain shadow-2xl rounded-sm select-none" 
+                            className="w-full h-full object-contain shadow-2xl select-none" 
                         />
                         <button 
-                            className="absolute -top-12 right-0 p-2 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 rounded-full transition-colors"
-                            onClick={() => setIsFullScreen(false)}
+                            className="absolute top-4 right-4 p-2 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 rounded-full transition-colors z-50"
+                            onClick={(e) => { e.stopPropagation(); setIsFullScreen(false); }}
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -121,7 +121,8 @@ export const BlockRenderer: React.FC<{ content: ModulePageContent[] }> = React.m
                         return <h4 key={index} style={textStyle} className={`text-2xl font-semibold !mb-4 !mt-6 ${alignClass}`}>{item.content}</h4>;
                     case 'paragraph':
                         // Increased font size to text-lg (mobile) and text-xl (desktop) with relaxed leading
-                        return <p key={index} style={textStyle} className={`${alignClass} text-lg md:text-xl leading-relaxed`}>{item.content}</p>;
+                        // Added whitespace-pre-wrap to respect line breaks from editor
+                        return <p key={index} style={textStyle} className={`${alignClass} text-lg md:text-xl leading-relaxed whitespace-pre-wrap`}>{item.content}</p>;
                     case 'image':
                         return (
                             <figure key={index} className="my-6">

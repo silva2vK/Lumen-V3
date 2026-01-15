@@ -182,8 +182,8 @@ const StudentActivityResponse: React.FC = () => {
 
     // --- LAYOUT ROUTER (Strict Logic) ---
     
-    // 1. Prioritize Horror Layout for specific types OR Restless Dreams theme
-    if (activity.type === 'VisualSourceAnalysis' || theme === 'restless-dreams') {
+    // 1. Prioritize Horror Layout ONLY if explicitly selected in settings
+    if (theme === 'restless-dreams') {
         return <RestlessLayout {...layoutProps} />;
     }
 
