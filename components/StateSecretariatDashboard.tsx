@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Card } from './common/Card';
 import { ICONS, SpinnerIcon } from '../constants/index';
 import { useStateSecretariatContext } from '../contexts/StateSecretariatContext';
@@ -217,7 +217,7 @@ const StateSecretariatDashboard: React.FC = () => {
                                         paddingAngle={2}
                                         dataKey="risk"
                                         nameKey="name"
-                                        label={({name, risk}) => `${name.substring(0,3)}: ${risk}%`}
+                                        label={({name, value}) => `${name.substring(0,3)}: ${value}%`}
                                     >
                                         {dropoutData.map((entry, index) => (
                                             <Cell key={`cell-${index}`} fill={index === 0 ? '#EF4444' : index === 1 ? '#F59E0B' : '#10B981'} />

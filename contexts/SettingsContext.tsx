@@ -78,7 +78,8 @@ const hexToRgb = (hex: string) => {
 
 export function SettingsProvider({ children }: { children?: React.ReactNode }) {
     const [theme, setTheme] = useState<Theme>('standard');
-    const [isHighContrastText, setIsHighContrastText] = useState(false);
+    // High contrast text enabled by default
+    const [isHighContrastText, setIsHighContrastText] = useState(true);
     
     const [wallpaper, setWallpaper] = useState<string | null>(null);
     const [globalTheme, setGlobalTheme] = useState<GlobalTheme>({ desktop: null, mobile: null, accent: null });
@@ -131,8 +132,12 @@ export function SettingsProvider({ children }: { children?: React.ReactNode }) {
         const savedTheme = localStorage.getItem('app-theme') as Theme | null;
         if (savedTheme && PRESET_THEMES.some(p => p.id === savedTheme)) setTheme(savedTheme);
         
-        const savedHighContrastText = localStorage.getItem('app-high-contrast-text') === 'true';
-        setIsHighContrastText(savedHighContrastText);
+        // High Contrast Text Logic:
+        // Check local storage. If present, use it. If not, fallback to default state (true).
+        const savedHighContrastText = localStorage.getItem('app-high-contrast-text');
+        if (savedHighContrastText !== null) {
+            setIsHighContrastText(savedHighContrastText === 'true');
+        }
 
         const savedMask = localStorage.getItem('app-wallpaper-mask');
         if (savedMask !== null) setEnableWallpaperMaskState(savedMask === 'true');

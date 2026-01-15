@@ -40,12 +40,12 @@ export const ChartGradients: React.FC = () => (
 );
 
 // --- Beautiful Tooltip ---
-export const CustomTooltip: React.FC<TooltipProps<number, string>> = ({ active, payload, label }) => {
+export const CustomTooltip: React.FC<any> = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
         return (
             <div className="bg-white/90 dark:bg-slate-800/90 backdrop-blur-md p-3 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl transition-all">
                 {label && <p className="text-sm font-bold text-slate-700 dark:text-slate-200 mb-1">{label}</p>}
-                {payload.map((entry, index) => (
+                {payload.map((entry: any, index: number) => (
                     <p key={index} className="text-sm font-medium flex items-center gap-2" style={{ color: entry.color }}>
                         <span className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }}></span>
                         {entry.name}: <span className="font-bold">{entry.value}</span>
