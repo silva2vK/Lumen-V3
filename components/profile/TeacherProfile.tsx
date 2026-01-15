@@ -62,8 +62,10 @@ export const TeacherProfile: React.FC<ProfileViewProps> = (props) => {
     
     const { teacherClasses } = useTeacherClassContext();
 
-    const { user, isEditing, setIsEditing, name, setName, avatarUrl, setAvatarUrl, handleSave, handleAvatarFileChange, isUploadingAvatar, handleWallpaperChange, isUploadingWallpaper, wallpaper, removeWallpaper } = props;
+    const { user, isEditing, setIsEditing, name, setName, avatarUrl, setAvatarUrl, handleSave, handleAvatarFileChange, isUploadingAvatar, handleWallpaperChange, handleWallpaperUrlSave, isUploadingWallpaper, wallpaper, removeWallpaper } = props;
     const [avatarMode, setAvatarMode] = useState<'upload' | 'url'>('upload');
+    const [wallpaperMode, setWallpaperMode] = useState<'upload' | 'url'>('upload');
+    const [wallpaperUrlInput, setWallpaperUrlInput] = useState('');
 
     return (
         <div className="min-h-screen animate-fade-in pb-20 font-sans">
@@ -157,14 +159,37 @@ export const TeacherProfile: React.FC<ProfileViewProps> = (props) => {
                                         <div className="h-full flex items-center justify-center text-slate-800 font-black text-2xl opacity-20">LUMEN</div>
                                     )}
                                 </div>
-                                <div className="flex flex-col gap-2">
-                                    <label className="cursor-pointer px-4 py-2 bg-slate-800 text-white text-[10px] font-bold uppercase hover:bg-slate-700 transition-colors rounded">
-                                        {isUploadingWallpaper ? '...' : 'UPLOAD'}
-                                        <input type="file" className="hidden" accept="image/*" onChange={handleWallpaperChange} />
-                                    </label>
-                                    {wallpaper && <button onClick={removeWallpaper} className="px-4 py-2 border border-red-900 text-red-500 text-[10px] font-bold uppercase hover:bg-red-950 transition-colors rounded">RESET</button>}
-                                </div>
                             </div>
+
+                            <div className="flex gap-3 mb-2">
+                                <button onClick={() => setWallpaperMode('upload')} className={`flex-1 text-[10px] font-bold uppercase py-1 ${wallpaperMode === 'upload' ? 'text-brand border-b border-brand' : 'text-slate-500 border-b border-transparent hover:text-slate-300'}`}>Arquivo</button>
+                                <button onClick={() => setWallpaperMode('url')} className={`flex-1 text-[10px] font-bold uppercase py-1 ${wallpaperMode === 'url' ? 'text-brand border-b border-brand' : 'text-slate-500 border-b border-transparent hover:text-slate-300'}`}>Link (URL)</button>
+                            </div>
+
+                            {wallpaperMode === 'upload' ? (
+                                <label className="block cursor-pointer bg-slate-800 text-white text-[10px] font-bold uppercase hover:bg-slate-700 transition-colors rounded text-center py-2">
+                                    {isUploadingWallpaper ? 'ENVIANDO...' : 'CARREGAR ARQUIVO'}
+                                    <input type="file" className="hidden" accept="image/*" onChange={handleWallpaperChange} disabled={isUploadingWallpaper} />
+                                </label>
+                            ) : (
+                                <div className="flex gap-2">
+                                    <input 
+                                        type="text" 
+                                        value={wallpaperUrlInput} 
+                                        onChange={e => setWallpaperUrlInput(e.target.value)} 
+                                        placeholder="https://..." 
+                                        className="flex-1 bg-black border border-slate-700 text-[10px] p-2 text-white focus:border-brand outline-none"
+                                    />
+                                    <button 
+                                        onClick={() => handleWallpaperUrlSave(wallpaperUrlInput)}
+                                        className="bg-brand text-black text-[10px] font-bold uppercase px-3 hover:bg-brand/90"
+                                    >
+                                        SALVAR
+                                    </button>
+                                </div>
+                            )}
+
+                            {wallpaper && <button onClick={removeWallpaper} className="w-full py-2 border border-red-900 text-red-500 text-[10px] font-bold uppercase hover:bg-red-950 transition-colors rounded">REMOVER WALLPAPER</button>}
                         </div>
                     </SlashContainer>
                 </div>
@@ -190,6 +215,7 @@ export const TeacherProfile: React.FC<ProfileViewProps> = (props) => {
                                         <div className="absolute inset-0 flex items-center justify-center z-10">
                                             <span className={`text-xs font-bold uppercase tracking-wider drop-shadow-md text-white`}>{preset.label}</span>
                                         </div>
+                                        {/* Accent Preview Dot */}
                                         <div className="absolute bottom-2 right-2 w-3 h-3 rounded-full shadow-sm" style={{ backgroundColor: preset.accent }} />
                                     </button>
                                 ))}

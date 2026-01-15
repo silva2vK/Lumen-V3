@@ -14,7 +14,7 @@ import type { ProfileViewProps } from './profile/ProfileTypes';
 
 const Profile: React.FC = () => {
     const { user, userRole, updateUser } = useAuth();
-    const { updateWallpaper, removeWallpaper, wallpaper: contextWallpaper } = useSettings();
+    const { updateWallpaper, removeWallpaper, wallpaper: contextWallpaper, setWallpaperFromUrl } = useSettings();
     const { addToast } = useToast();
     
     const [isEditing, setIsEditing] = useState(false);
@@ -58,13 +58,39 @@ const Profile: React.FC = () => {
             try {
                 const compressed = await compressImage(e.target.files[0]);
                 await updateWallpaper(compressed);
-                addToast("Wallpaper atualizado!", "success");
+                // Clear URL if setting local file
+                if (user?.id) await updateUser({ wallpaperUrl: null });
+                addToast("Wallpaper (Arquivo) atualizado!", "success");
             } catch (error: any) {
                 console.error("Wallpaper Upload Error:", error);
                 addToast(`Erro: ${error.message || 'Falha no wallpaper'}`, "error");
             } finally {
                 setIsUploadingWallpaper(false);
             }
+        }
+    };
+
+    const handleWallpaperUrlSave = async (url: string) => {
+        if (!user) return;
+        try {
+            await updateUser({ wallpaperUrl: url });
+            setWallpaperFromUrl(url);
+            // Clear local IDB wallpaper to prioritize URL
+            await removeWallpaper(); 
+            addToast("Wallpaper (URL) salvo!", "success");
+        } catch (error: any) {
+            console.error("Wallpaper URL Save Error:", error);
+            addToast("Falha ao salvar URL do wallpaper.", "error");
+        }
+    };
+
+    const handleRemoveWallpaper = async () => {
+        try {
+            await removeWallpaper(); // Clears IDB
+            if (user?.id) await updateUser({ wallpaperUrl: null }); // Clears Firestore
+            addToast("Wallpaper removido.", "info");
+        } catch (error) {
+            console.error("Remove Wallpaper Error:", error);
         }
     };
 
@@ -81,7 +107,8 @@ const Profile: React.FC = () => {
         user, isEditing, setIsEditing, name, setName, series, setSeries,
         avatarUrl, setAvatarUrl, handleSave, handleAvatarFileChange, isUploadingAvatar,
         handleWallpaperChange, isUploadingWallpaper, wallpaper: contextWallpaper,
-        removeWallpaper
+        removeWallpaper: handleRemoveWallpaper,
+        handleWallpaperUrlSave
     };
 
     if (userRole === 'aluno') return <StudentProfile {...sharedProps} />;

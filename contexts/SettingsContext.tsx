@@ -59,6 +59,7 @@ interface SettingsContextType {
     enableFocusMode: boolean;
     setEnableFocusMode: (value: boolean) => void;
     updateWallpaper: (file: File) => Promise<void>;
+    setWallpaperFromUrl: (url: string | null) => void;
     removeWallpaper: () => Promise<void>;
     accentColor: string;
     setAccentColor: (color: string) => void;
@@ -222,6 +223,10 @@ export function SettingsProvider({ children }: { children?: React.ReactNode }) {
         setWallpaper(null);
     };
 
+    const setWallpaperFromUrl = (url: string | null) => {
+        setWallpaper(url);
+    };
+
     const setAccentColor = (color: string) => {
         // Bloqueia mudança manual se estiver no tema controlado 'tematica'
         if (theme === 'tematica') return; 
@@ -268,7 +273,9 @@ export function SettingsProvider({ children }: { children?: React.ReactNode }) {
         wallpaper, globalTheme, 
         enableWallpaperMask, setEnableWallpaperMask, 
         enableFocusMode, setEnableFocusMode,
-        updateWallpaper: updateWallpaperState, removeWallpaper: removeWallpaperState,
+        updateWallpaper: updateWallpaperState, 
+        setWallpaperFromUrl,
+        removeWallpaper: removeWallpaperState,
         accentColor, setAccentColor,
         fontProfile, setFontProfile,
         loadFontProfile

@@ -32,6 +32,7 @@ export interface User {
   role: Role;
   series?: string;
   avatarUrl?: string;
+  wallpaperUrl?: string | null; // New field for console wallpaper
   myClassesSummary?: ClassSummary[]; 
   wards?: string[]; 
   linkedSchoolIds?: string[]; 

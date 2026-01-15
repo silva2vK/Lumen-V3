@@ -76,7 +76,8 @@ export function AuthProvider({ children }: { children?: React.ReactNode }) {
                             email: user.email!,
                             role: profile.role,
                             series: profile.series,
-                            avatarUrl: profile.avatarUrl // Ensure avatarUrl is loaded from Firestore
+                            avatarUrl: profile.avatarUrl, // Ensure avatarUrl is loaded from Firestore
+                            wallpaperUrl: profile.wallpaperUrl || null
                         };
                         setUser(appUser);
                         setAuthState('authenticated');
@@ -199,6 +200,7 @@ export function AuthProvider({ children }: { children?: React.ReactNode }) {
         if (updatedData.name !== undefined) payload.name = updatedData.name;
         if (updatedData.series !== undefined) payload.series = updatedData.series;
         if (updatedData.avatarUrl !== undefined) payload.avatarUrl = updatedData.avatarUrl;
+        if (updatedData.wallpaperUrl !== undefined) payload.wallpaperUrl = updatedData.wallpaperUrl;
 
         await updateDoc(userDocRef, payload);
 

@@ -12,6 +12,7 @@ export interface ProfileViewProps {
     handleAvatarFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
     isUploadingAvatar: boolean;
     handleWallpaperChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    handleWallpaperUrlSave: (url: string) => void;
     isUploadingWallpaper: boolean;
     wallpaper: string | null;
     removeWallpaper: () => void;

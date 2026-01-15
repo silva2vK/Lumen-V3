@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { useSettings, PRESET_THEMES } from '../../contexts/SettingsContext';
 import { useStudentGamificationContext } from '../../contexts/StudentGamificationContext';
@@ -91,8 +92,10 @@ export const StudentProfile: React.FC<ProfileViewProps> = (props) => {
         return { label: 'D', color: 'text-slate-500' };
     }, [userStats]);
 
-    const { user, isEditing, setIsEditing, name, setName, series, setSeries, avatarUrl, setAvatarUrl, handleSave, handleAvatarFileChange, isUploadingAvatar, handleWallpaperChange, isUploadingWallpaper, wallpaper, removeWallpaper } = props;
+    const { user, isEditing, setIsEditing, name, setName, series, setSeries, avatarUrl, setAvatarUrl, handleSave, handleAvatarFileChange, isUploadingAvatar, handleWallpaperChange, handleWallpaperUrlSave, isUploadingWallpaper, wallpaper, removeWallpaper } = props;
     const [avatarMode, setAvatarMode] = useState<'upload' | 'url'>('upload');
+    const [wallpaperMode, setWallpaperMode] = useState<'upload' | 'url'>('upload');
+    const [wallpaperUrlInput, setWallpaperUrlInput] = useState('');
 
     return (
         <div className="min-h-screen animate-fade-in pb-20 font-sans">
@@ -183,21 +186,44 @@ export const StudentProfile: React.FC<ProfileViewProps> = (props) => {
                         <div className="space-y-4">
                             <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Papel de Parede do Console</p>
                             <div className="flex gap-4 items-center">
-                                <div className="flex-1 h-24 bg-black border border-white/10 rounded-lg overflow-hidden relative">
+                                <div className="flex-1 h-24 bg-black border border-white/10 rounded-lg overflow-hidden relative group">
                                     {wallpaper ? (
                                         <img src={wallpaper} className="w-full h-full object-cover" alt="Wallpaper" />
                                     ) : (
                                         <div className="h-full flex items-center justify-center text-slate-800 font-black text-2xl opacity-20">LUMEN</div>
                                     )}
                                 </div>
-                                <div className="flex flex-col gap-2">
-                                    <label className="cursor-pointer px-4 py-2 bg-slate-800 text-white text-[10px] font-bold uppercase hover:bg-slate-700 transition-colors rounded">
-                                        {isUploadingWallpaper ? '...' : 'UPLOAD'}
-                                        <input type="file" className="hidden" accept="image/*" onChange={handleWallpaperChange} />
-                                    </label>
-                                    {wallpaper && <button onClick={removeWallpaper} className="px-4 py-2 border border-red-900 text-red-500 text-[10px] font-bold uppercase hover:bg-red-950 transition-colors rounded">RESET</button>}
-                                </div>
                             </div>
+                            
+                            <div className="flex gap-3 mb-2">
+                                <button onClick={() => setWallpaperMode('upload')} className={`flex-1 text-[10px] font-bold uppercase py-1 ${wallpaperMode === 'upload' ? 'text-brand border-b border-brand' : 'text-slate-500 border-b border-transparent hover:text-slate-300'}`}>Arquivo</button>
+                                <button onClick={() => setWallpaperMode('url')} className={`flex-1 text-[10px] font-bold uppercase py-1 ${wallpaperMode === 'url' ? 'text-brand border-b border-brand' : 'text-slate-500 border-b border-transparent hover:text-slate-300'}`}>Link (URL)</button>
+                            </div>
+
+                            {wallpaperMode === 'upload' ? (
+                                <label className="block cursor-pointer bg-slate-800 text-white text-[10px] font-bold uppercase hover:bg-slate-700 transition-colors rounded text-center py-2">
+                                    {isUploadingWallpaper ? 'ENVIANDO...' : 'CARREGAR ARQUIVO'}
+                                    <input type="file" className="hidden" accept="image/*" onChange={handleWallpaperChange} disabled={isUploadingWallpaper} />
+                                </label>
+                            ) : (
+                                <div className="flex gap-2">
+                                    <input 
+                                        type="text" 
+                                        value={wallpaperUrlInput} 
+                                        onChange={e => setWallpaperUrlInput(e.target.value)} 
+                                        placeholder="https://..." 
+                                        className="flex-1 bg-black border border-slate-700 text-[10px] p-2 text-white focus:border-brand outline-none"
+                                    />
+                                    <button 
+                                        onClick={() => handleWallpaperUrlSave(wallpaperUrlInput)}
+                                        className="bg-brand text-black text-[10px] font-bold uppercase px-3 hover:bg-brand/90"
+                                    >
+                                        SALVAR
+                                    </button>
+                                </div>
+                            )}
+
+                            {wallpaper && <button onClick={removeWallpaper} className="w-full py-2 border border-red-900 text-red-500 text-[10px] font-bold uppercase hover:bg-red-950 transition-colors rounded">REMOVER WALLPAPER</button>}
                         </div>
                     </SlashContainer>
                 </div>

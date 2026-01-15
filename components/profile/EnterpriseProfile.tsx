@@ -11,6 +11,10 @@ export const EnterpriseProfile: React.FC<ProfileViewProps> = (props) => {
     } = useSettings();
     const { user, isEditing, setIsEditing, name, setName, avatarUrl, handleSave, handleAvatarFileChange, isUploadingAvatar } = props;
 
+    // Although Enterprise Profile was less detailed in prompt history, we ensure compatibility
+    // by accepting props, even if we don't render the wallpaper UI yet to keep it clean.
+    // The shared types ensures it doesn't break.
+
     return (
         <div className="max-w-6xl mx-auto py-10 px-4 sm:px-6 lg:px-8 font-sans animate-fade-in">
             <div className="mb-10">

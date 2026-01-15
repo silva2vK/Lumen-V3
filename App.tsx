@@ -6,6 +6,7 @@ import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { OfflineIndicator } from './components/common/OfflineIndicator';
 import { DebugTools } from './components/common/DebugTools';
 import { SecurityGate } from './components/common/SecurityGate';
+import { CookieConsent } from './components/common/CookieConsent';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
 import { LoginPage } from './components/LoginPage';
@@ -120,9 +121,9 @@ const LoadingSpinner: React.FC = () => (
 );
 
 const MainLayout: React.FC = () => {
-    const { userRole } = useAuth();
+    const { userRole, user } = useAuth();
     const { currentPage, activeModule, activeClass, activeActivity, activeQuiz, gradingActivity, toggleMobileMenu, isMobileMenuOpen } = useNavigation();
-    const { wallpaper, enableWallpaperMask, globalTheme, enableFocusMode } = useSettings();
+    const { wallpaper, enableWallpaperMask, globalTheme, enableFocusMode, setWallpaperFromUrl } = useSettings();
     
     const [isScrolled, setIsScrolled] = useState(false);
     const mainContentRef = useRef<HTMLElement>(null);
@@ -131,6 +132,13 @@ const MainLayout: React.FC = () => {
     useEffect(() => {
         configureEnvironment();
     }, []);
+
+    // Sync Wallpaper from User Profile (Cloud)
+    useEffect(() => {
+        if (user && user.wallpaperUrl) {
+            setWallpaperFromUrl(user.wallpaperUrl);
+        }
+    }, [user, setWallpaperFromUrl]);
 
     useEffect(() => {
         const mainEl = mainContentRef.current;
@@ -269,6 +277,7 @@ const MainLayout: React.FC = () => {
         <div className={`relative flex h-screen overflow-hidden ${userRole === 'admin' ? 'admin-container' : ''}`} style={{ backgroundColor: 'var(--bg-main)' }}>
             <SecurityGate />
             <OfflineIndicator />
+            <CookieConsent />
             
             {/* Wallpaper Layer (Z-0) */}
             {!isFocusMode && activeWallpaper ? (
@@ -339,7 +348,7 @@ const AppContent = () => {
     const [onboardingError, setOnboardingError] = useState<string | null>(null);
 
     if (authState === 'loading') return <LoadingSpinner />;
-    if (authState === 'unauthenticated') return <><OfflineIndicator /><LoginPage initialError={authError} /></>;
+    if (authState === 'unauthenticated') return <><OfflineIndicator /><LoginPage initialError={authError} /><CookieConsent /></>;
     
     if (user && !user.role) {
         if (onboardingStep === 'role') {

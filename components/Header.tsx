@@ -6,6 +6,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useNavigation } from '../contexts/NavigationContext';
 import { useStudentNotificationsContext } from '../contexts/StudentNotificationContext';
 import { ZoomControls } from './common/ZoomControls';
+import { FullscreenToggle } from './common/FullscreenToggle';
 
 interface HeaderProps {
     title: string;
@@ -46,6 +47,9 @@ export const Header: React.FC<HeaderProps> = ({ title, isScrolled }) => {
 
             {/* Right-aligned Actions - Keep Visible and Interactive */}
             <div className={`flex items-center space-x-3 pointer-events-auto transition-all duration-300 ease-in-out ${isScrolled ? 'opacity-0 scale-90 pointer-events-none' : 'opacity-100'}`}>
+                <div>
+                    <FullscreenToggle />
+                </div>
                 <div>
                     <ZoomControls />
                 </div>
