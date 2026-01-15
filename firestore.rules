@@ -23,6 +23,11 @@ service cloud.firestore {
       return isAuthenticated() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
     
+    // Helper para verificar campos imutáveis
+    function notUpdating(field) {
+      return !(field in request.resource.data) || resource.data[field] == request.resource.data[field];
+    }
+
     // =================================================================================
     // 📝 ACTIVITIES (Atividades)
     // =================================================================================
@@ -36,12 +41,10 @@ service cloud.firestore {
       
       // ATUALIZAÇÃO: 
       // 1. Professores/Admins podem editar tudo.
-      // 2. Alunos podem atualizar APENAS se não alterarem campos críticos (Título, Descrição, Pontos).
-      // Isso permite que o 'increment' nos contadores funcione sem usar a função 'diff' que pode ser instável.
+      // 2. Alunos podem atualizar APENAS os contadores de submissão (incremento).
       allow update: if isTeacher() || isAdmin() || (
         isAuthenticated() && 
-        request.resource.data.title == resource.data.title &&
-        request.resource.data.points == resource.data.points
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['submissionCount', 'pendingSubmissionCount'])
       );
 
       // SUB-COLEÇÃO: SUBMISSÕES
@@ -114,10 +117,5 @@ service cloud.firestore {
     match /attendance_sessions/{sessionId}/records/{recordId} { allow read, write: if isAuthenticated(); }
     match /system_settings/{id} { allow read: if true; allow write: if isAdmin(); }
     match /teacher_history/{userId} { allow read, write: if isUser(userId); }
-
-    // Helper para verificar campos imutáveis
-    function notUpdating(field) {
-      return !(field in request.resource.data) || resource.data[field] == request.resource.data[field];
-    }
   }
 }
