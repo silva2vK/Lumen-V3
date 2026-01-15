@@ -116,14 +116,15 @@ export const BlockRenderer: React.FC<{ content: ModulePageContent[] }> = React.m
 
                 switch (item.type) {
                     case 'title':
-                        return <h3 key={index} style={textStyle} className={`text-3xl font-bold !mb-4 !mt-6 first:!mt-0 ${alignClass}`}>{item.content}</h3>;
+                        return <h3 key={index} style={textStyle} className={`text-4xl font-bold !mb-6 !mt-8 first:!mt-0 ${alignClass}`}>{item.content}</h3>;
                     case 'subtitle':
-                        return <h4 key={index} style={textStyle} className={`text-xl font-semibold !mb-2 !mt-4 ${alignClass}`}>{item.content}</h4>;
+                        return <h4 key={index} style={textStyle} className={`text-2xl font-semibold !mb-4 !mt-6 ${alignClass}`}>{item.content}</h4>;
                     case 'paragraph':
-                        return <p key={index} style={textStyle} className={alignClass}>{item.content}</p>;
+                        // Increased font size to text-lg (mobile) and text-xl (desktop) with relaxed leading
+                        return <p key={index} style={textStyle} className={`${alignClass} text-lg md:text-xl leading-relaxed`}>{item.content}</p>;
                     case 'image':
                         return (
-                            <figure key={index} className="my-4">
+                            <figure key={index} className="my-6">
                                 <SafeImage 
                                     src={item.content as string} 
                                     alt={item.alt || 'Imagem do módulo'} 
@@ -138,12 +139,12 @@ export const BlockRenderer: React.FC<{ content: ModulePageContent[] }> = React.m
                         );
                     case 'list':
                         return (
-                            <ul key={index} className="list-disc pl-5">
-                                {(item.content as string[]).map((li, i) => <li key={i} style={textStyle}>{li}</li>)}
+                            <ul key={index} className="list-disc pl-6 text-lg md:text-xl leading-relaxed">
+                                {(item.content as string[]).map((li, i) => <li key={i} style={textStyle} className="mb-2">{li}</li>)}
                             </ul>
                         );
                     case 'quote':
-                        return <blockquote key={index} className="border-l-4 border-slate-300 dark:border-slate-600 pl-4 italic my-4"><p style={textStyle}>{item.content}</p></blockquote>;
+                        return <blockquote key={index} className="border-l-4 border-slate-300 dark:border-slate-600 pl-6 italic my-6 text-lg md:text-xl leading-relaxed opacity-90"><p style={textStyle}>{item.content}</p></blockquote>;
                     case 'video':
                         const videoUrl = item.content as string;
                         const videoId = getYouTubeVideoId(videoUrl);
@@ -173,7 +174,7 @@ export const BlockRenderer: React.FC<{ content: ModulePageContent[] }> = React.m
                             </div>
                         ) : <p key={index} className="text-red-500 my-4">Link do vídeo do YouTube inválido ou não suportado: {videoUrl}</p>;
                     case 'divider':
-                        return <hr key={index} className="my-8 dark:border-slate-700" />;
+                        return <hr key={index} className="my-10 dark:border-slate-700" />;
                     default:
                         return null;
                 }

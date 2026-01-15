@@ -105,15 +105,15 @@ interface EraSectionData {
 const RulerTrack: React.FC<{ sections: EraSectionData[] }> = ({ sections }) => {
     return (
         <div className="absolute top-[80%] left-0 right-0 h-40 pointer-events-none z-10 flex">
-            {/* The Main Horizontal Line */}
-            <div className="absolute top-0 left-0 right-0 h-[2px] bg-white/20"></div>
+            {/* The Main Horizontal Line - High Contrast White */}
+            <div className="absolute top-0 left-0 right-0 h-[2px] bg-white shadow-[0_0_10px_rgba(255,255,255,0.5)]"></div>
             
             {sections.map(section => (
                 <React.Fragment key={section.era}>
-                    {/* Era Label - Moves with the timeline */}
+                    {/* Era Label - Moves with the timeline - High Contrast White Background Text */}
                     <div 
                         style={{ left: `${section.startX + 20}px` }}
-                        className="absolute -top-32 text-[6rem] font-black text-white/5 uppercase tracking-widest whitespace-nowrap font-epic select-none pointer-events-none"
+                        className="absolute -top-32 text-[6rem] font-black text-white/30 uppercase tracking-widest whitespace-nowrap font-epic select-none pointer-events-none"
                     >
                         {ERA_CONFIG[section.era].label}
                     </div>
@@ -128,18 +128,18 @@ const RulerTrack: React.FC<{ sections: EraSectionData[] }> = ({ sections }) => {
                                 width: `${cen.width}px`,
                                 height: '100%' 
                             }}
-                            className="border-l border-white/10 flex flex-col justify-start pl-2"
+                            className="border-l border-white/50 flex flex-col justify-start pl-2"
                         >
                             {/* Century Label */}
-                            <span className={`text-[10px] font-mono font-bold mt-2 px-1 rounded w-fit ${cen.items.length > 0 ? 'text-white/60 bg-black/40' : 'text-white/20'}`}>
+                            <span className={`text-[10px] font-mono font-bold mt-2 px-1 rounded w-fit ${cen.items.length > 0 ? 'text-white bg-black/60' : 'text-white/80'}`}>
                                 {cen.label}
                             </span>
 
-                            {/* Minor Ticks inside Century */}
-                            <div className="absolute top-0 left-0 right-0 h-2 flex justify-between px-4 opacity-30 pointer-events-none">
-                                <div className="w-[1px] h-full bg-white/30"></div>
-                                <div className="w-[1px] h-full bg-white/30"></div>
-                                <div className="w-[1px] h-full bg-white/30"></div>
+                            {/* Minor Ticks inside Century - Increased Visibility */}
+                            <div className="absolute top-0 left-0 right-0 h-2 flex justify-between px-4 pointer-events-none">
+                                <div className="w-[1px] h-full bg-white/60"></div>
+                                <div className="w-[1px] h-full bg-white/60"></div>
+                                <div className="w-[1px] h-full bg-white/60"></div>
                             </div>
                         </div>
                     ))}
@@ -169,17 +169,17 @@ const TimelineNode: React.FC<{
                 zIndex: 20
             }}
         >
-            {/* The Stem */}
+            {/* The Stem - Brighter default state */}
             <div 
-                className="w-[1px] bg-gradient-to-t from-white/40 to-transparent group-hover/node:bg-white/80 transition-colors duration-300"
+                className="w-[1px] bg-gradient-to-t from-white to-transparent group-hover/node:bg-white transition-colors duration-300"
                 style={{ height: `${stemHeight}px` }}
             />
 
             {/* The Dot */}
-            <div className={`absolute -bottom-1.5 w-3 h-3 rounded-full bg-[#09090b] border-2 border-white/50 group-hover/node:scale-150 group-hover/node:border-[${color}] transition-all z-20 shadow-[0_0_10px_rgba(255,255,255,0.2)]`}></div>
+            <div className={`absolute -bottom-1.5 w-3 h-3 rounded-full bg-[#09090b] border-2 border-white group-hover/node:scale-150 group-hover/node:border-[${color}] transition-all z-20 shadow-[0_0_10px_rgba(255,255,255,0.5)]`}></div>
 
             {/* Year Label (Small pill) */}
-            <div className="mb-2 mt-1 bg-black/80 backdrop-blur border border-white/10 px-2 py-0.5 rounded text-[9px] font-mono text-slate-300 group-hover/node:text-brand group-hover/node:border-brand/50 transition-colors">
+            <div className="mb-2 mt-1 bg-black/80 backdrop-blur border border-white/30 px-2 py-0.5 rounded text-[9px] font-mono text-white group-hover/node:text-brand group-hover/node:border-brand/50 transition-colors">
                 {Math.abs(item.year)} {item.year < 0 ? 'a.C.' : ''}
             </div>
 
@@ -187,8 +187,8 @@ const TimelineNode: React.FC<{
             <div 
                 onClick={(e) => { e.stopPropagation(); onClick(item); }}
                 className={`
-                    w-64 bg-[#09090b] border border-white/10 rounded-xl overflow-hidden cursor-pointer
-                    hover:scale-105 hover:shadow-[0_0_30px_rgba(0,0,0,0.5)] hover:border-white/30 hover:z-50
+                    w-64 bg-[#09090b] border border-white/20 rounded-xl overflow-hidden cursor-pointer
+                    hover:scale-105 hover:shadow-[0_0_30px_rgba(0,0,0,0.5)] hover:border-white/50 hover:z-50
                     transition-all duration-300 relative group-hover/node:-translate-y-2
                 `}
             >
@@ -207,7 +207,7 @@ const TimelineNode: React.FC<{
                     </div>
                 </div>
 
-                <div className="p-3 border-t border-white/5 bg-gradient-to-b from-transparent to-white/5">
+                <div className="p-3 border-t border-white/10 bg-gradient-to-b from-transparent to-white/5">
                     <h4 className="text-sm font-bold text-slate-100 leading-tight line-clamp-2 mb-1 group-hover/node:text-brand">
                         {item.title}
                     </h4>
